@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "911968432765",
+    "project_id": "zenfocusai-2bb30",
+    "storage_bucket": "zenfocusai-2bb30.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911968432765:android:501fd107f71ab9b4377714",
+        "android_client_info": {
+          "package_name": "com.zenfocusai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOpTwf_NBzEW76MCgsgphZ0IHaXVecUUs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

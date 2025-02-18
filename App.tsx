@@ -1,118 +1,89 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+// App.tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, Alert, Vibration } from 'react-native';
+import firebase from '@react-native-firebase/app'; // Importe o módulo principal do Firebase
+import TimerDisplay from './components/TimerDisplay';
+import Controls from './components/Controls';
+import CycleCounter from './components/CycleCounter';
+import ProgressCircle from './components/ProgressCircle';
+import { configureNotifications, showNotification } from './services/NotificationService';
+import { saveData, loadData } from './services/StorageService';
+import globalStyles from './styles/globalStyles';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const PomodoroTimer = () => {
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutos em segundos
+  const [isRunning, setIsRunning] = useState(false);
+  const [cyclesCompleted, setCyclesCompleted] = useState(0);
+  const [isBreak, setIsBreak] = useState(false);
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  // Inicializa o Firebase
+  useEffect(() => {
+    if (!firebase.apps.length) {
+      firebase.initializeApp({}); // Inicializa o Firebase
+      console.log('Firebase inicializado com sucesso!');
+    }
+  }, []);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  // Configurar notificações ao montar o componente
+  useEffect(() => {
+    configureNotifications();
+    loadSavedData();
+  }, []);
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  // Carregar dados salvos
+  const loadSavedData = async () => {
+    const savedCycles = await loadData('cyclesCompleted');
+    if (savedCycles) setCyclesCompleted(savedCycles);
   };
 
+  // Atualizar o tempo e verificar se o tempo acabou
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && interval) {
+      clearInterval(interval);
+      setIsRunning(false);
+      Vibration.vibrate([500, 500, 500]); // Vibra ao terminar
+      showNotification(isBreak ? 'Pausa Concluída!' : 'Pomodoro Concluído!', 'Hora de descansar!');
+      if (!isBreak) {
+        const newCycles = cyclesCompleted + 1;
+        setCyclesCompleted(newCycles);
+        saveData('cyclesCompleted', newCycles);
+        setIsBreak(true);
+        setTimeLeft(5 * 60); // 5 minutos de pausa
+      } else {
+        setIsBreak(false);
+        setTimeLeft(25 * 60); // Reinicia o Pomodoro
+      }
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning, timeLeft, isBreak]);
+
+  const toggleTimer = () => setIsRunning((prev) => !prev);
+  const resetTimer = () => {
+    setTimeLeft(25 * 60);
+    setIsRunning(false);
+    setIsBreak(false);
+  };
+
+  // Calcular o progresso para o círculo de progresso
+  const totalTime = isBreak ? 5 * 60 : 25 * 60;
+  const progress = ((totalTime - timeLeft) / totalTime) * 100;
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={globalStyles.container}>
+      <ProgressCircle progress={progress} />
+      <TimerDisplay timeLeft={timeLeft} />
+      <CycleCounter cyclesCompleted={cyclesCompleted} />
+      <Text style={globalStyles.modeText}>{isBreak ? 'Pausa' : 'Foco'}</Text>
+      <Controls isRunning={isRunning} toggleTimer={toggleTimer} resetTimer={resetTimer} />
+    </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
+export default PomodoroTimer;

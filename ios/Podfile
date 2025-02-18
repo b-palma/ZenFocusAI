@@ -20,7 +20,8 @@ target 'ZenFocusAI' do
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    pod 'RNCPushNotificationIOS', :path => '../node_modules/@react-native-community/push-notification-ios'
   )
 
   post_install do |installer|
