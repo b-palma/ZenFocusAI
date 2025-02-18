@@ -1,0 +1,4 @@
+<resources>
+    <!-- Cor de fundo da splash screen -->
+    <color name="splashBackgroundColor">#4CAF50</color> <!-- Substitua #FFFFFF pela cor desejada -->
+</resources>
