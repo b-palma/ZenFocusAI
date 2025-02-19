@@ -1,5 +1,7 @@
 // App.tsx
 import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, Alert, Vibration } from 'react-native';
 import firebase from '@react-native-firebase/app'; // Importe o módulo principal do Firebase
 import TimerDisplay from './components/TimerDisplay';
@@ -9,7 +11,11 @@ import ProgressCircle from './components/ProgressCircle';
 import { configureNotifications, showNotification } from './services/NotificationService';
 import { saveData, loadData } from './services/StorageService';
 import globalStyles from './styles/globalStyles';
+import MenuScreen from './screens/MenuScreen'; // Importe o MenuScreen
 
+const Stack = createNativeStackNavigator();
+
+// Componente PomodoroTimer (sem alterações)
 const PomodoroTimer = () => {
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutos em segundos
   const [isRunning, setIsRunning] = useState(false);
@@ -19,7 +25,14 @@ const PomodoroTimer = () => {
   // Inicializa o Firebase
   useEffect(() => {
     if (!firebase.apps.length) {
-      firebase.initializeApp({}); // Inicializa o Firebase
+      firebase.initializeApp({
+        apiKey: "AIzaSyAOpTwf_NBzEW76MCgsgphZ0IHaXVecUUs",
+        authDomain: "zenfocusai-2bb30.firebaseapp.com",
+        projectId: "zenfocusai-2bb30",
+        storageBucket: "zenfocusai-2bb30.appspot.com",
+        messagingSenderId: "911968432765",
+        appId: "1:911968432765:android:501fd107f71ab9b4377714"
+      }); // Inicializa o Firebase
       console.log('Firebase inicializado com sucesso!');
     }
   }, []);
@@ -86,4 +99,26 @@ const PomodoroTimer = () => {
   );
 };
 
-export default PomodoroTimer;
+// Componente principal do app
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Menu">
+        {/* Tela de Menu */}
+        <Stack.Screen
+          name="Menu"
+          component={MenuScreen}
+          options={{ title: 'ZenFocusAI' }}
+        />
+        {/* Tela do Timer Pomodoro */}
+        <Stack.Screen
+          name="PomodoroTimer"
+          component={PomodoroTimer}
+          options={{ title: 'Timer Pomodoro' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+export default App;
