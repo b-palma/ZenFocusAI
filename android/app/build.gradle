@@ -118,3 +118,5 @@ dependencies {
         implementation jscFlavor
     }
 }
+// Adicione esta linha para garantir que as fontes dos ícones sejam copiadas
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
