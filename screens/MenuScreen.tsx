@@ -8,6 +8,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 type RootStackParamList = {
   Menu: undefined; // A tela de menu não recebe parâmetros
   PomodoroTimer: undefined; // A tela do timer também não recebe parâmetros
+  Settings: undefined; // Adicione a tela de configurações
 };
 
 // Defina o tipo da prop `navigation`
@@ -24,10 +25,12 @@ const MenuScreen = ({ navigation }: { navigation: MenuScreenNavigationProp }) =>
   const handleOptionPress = (screen: string) => {
     if (screen === 'Pomodoro') {
       navigation.navigate('PomodoroTimer'); // Certifique-se de que o nome da tela está correto
-    } else {
-      Alert.alert('Em breve!', `A tela "${screen}" estará disponível em breve.`);
-    }
-  };
+    } else if (screen === 'Settings') {
+        navigation.navigate('Settings'); // Navegue para a tela de Configurações
+      } else {
+        Alert.alert('Em breve!', `A tela "${screen}" estará disponível em breve.`);
+      }
+    };
 
   return (
     <ImageBackground
