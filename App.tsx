@@ -1,106 +1,55 @@
 // App.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import PushNotification from 'react-native-push-notification';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text, Alert, Vibration } from 'react-native';
-import firebase from '@react-native-firebase/app'; // Importe o módulo principal do Firebase
-import TimerDisplay from './components/TimerDisplay';
-import Controls from './components/Controls';
-import CycleCounter from './components/CycleCounter';
-import ProgressCircle from './components/ProgressCircle';
-import { configureNotifications, showNotification } from './services/NotificationService';
-import { saveData, loadData } from './services/StorageService';
-import globalStyles from './styles/globalStyles';
-import MenuScreen from './screens/MenuScreen'; // Importe o MenuScreen
+import MenuScreen from './screens/MenuScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import PomodoroTimer from './components/PomodoroTimer';
 
-const Stack = createNativeStackNavigator();
+// Configuração inicial do PushNotification
+PushNotification.configure({
+  // Chamado quando uma notificação é recebida
+  onNotification: function (notification) {
+    console.log('NOTIFICATION:', notification);
+  },
 
-// Componente PomodoroTimer (sem alterações)
-const PomodoroTimer = () => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutos em segundos
-  const [isRunning, setIsRunning] = useState(false);
-  const [cyclesCompleted, setCyclesCompleted] = useState(0);
-  const [isBreak, setIsBreak] = useState(false);
+  // Solicita permissão no primeiro uso (iOS)
+  requestPermissions: true,
+});
 
-  // Inicializa o Firebase
-  useEffect(() => {
-    if (!firebase.apps.length) {
-      firebase.initializeApp({
-        apiKey: "AIzaSyAOpTwf_NBzEW76MCgsgphZ0IHaXVecUUs",
-        authDomain: "zenfocusai-2bb30.firebaseapp.com",
-        projectId: "zenfocusai-2bb30",
-        storageBucket: "zenfocusai-2bb30.appspot.com",
-        messagingSenderId: "911968432765",
-        appId: "1:911968432765:android:501fd107f71ab9b4377714"
-      }); // Inicializa o Firebase
-      console.log('Firebase inicializado com sucesso!');
-    }
-  }, []);
-
-  // Configurar notificações ao montar o componente
-  useEffect(() => {
-    configureNotifications();
-    loadSavedData();
-  }, []);
-
-  // Carregar dados salvos
-  const loadSavedData = async () => {
-    const savedCycles = await loadData('cyclesCompleted');
-    if (savedCycles) setCyclesCompleted(savedCycles);
-  };
-
-  // Atualizar o tempo e verificar se o tempo acabou
-  useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prevTime) => prevTime - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && interval) {
-      clearInterval(interval);
-      setIsRunning(false);
-      Vibration.vibrate([500, 500, 500]); // Vibra ao terminar
-      showNotification(isBreak ? 'Pausa Concluída!' : 'Pomodoro Concluído!', 'Hora de descansar!');
-      if (!isBreak) {
-        const newCycles = cyclesCompleted + 1;
-        setCyclesCompleted(newCycles);
-        saveData('cyclesCompleted', newCycles);
-        setIsBreak(true);
-        setTimeLeft(5 * 60); // 5 minutos de pausa
-      } else {
-        setIsBreak(false);
-        setTimeLeft(25 * 60); // Reinicia o Pomodoro
-      }
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning, timeLeft, isBreak]);
-
-  const toggleTimer = () => setIsRunning((prev) => !prev);
-  const resetTimer = () => {
-    setTimeLeft(25 * 60);
-    setIsRunning(false);
-    setIsBreak(false);
-  };
-
-  // Calcular o progresso para o círculo de progresso
-  const totalTime = isBreak ? 5 * 60 : 25 * 60;
-  const progress = ((totalTime - timeLeft) / totalTime) * 100;
-
-  return (
-    <View style={globalStyles.container}>
-      <ProgressCircle progress={progress} />
-      <TimerDisplay timeLeft={timeLeft} />
-      <CycleCounter cyclesCompleted={cyclesCompleted} />
-      <Text style={globalStyles.modeText}>{isBreak ? 'Pausa' : 'Foco'}</Text>
-      <Controls isRunning={isRunning} toggleTimer={toggleTimer} resetTimer={resetTimer} />
-    </View>
+// Configurar um receptor para broadcasts personalizados
+const setupBroadcastReceiver = () => {
+  PushNotification.createChannel(
+    {
+      channelId: 'test-channel', // ID do canal
+      channelName: 'Test Channel', // Nome do canal
+      playSound: true, // Tocar som
+      soundName: 'default', // Som padrão
+      importance: 4, // Alta prioridade
+      vibrate: true, // Vibração
+    },
+    (created) => console.log(`Canal criado: ${created}`)
   );
+
+  // Adicionar um listener para broadcasts personalizados
+  PushNotification.popInitialNotification((notification) => {
+    console.log('Notificação inicial:', notification);
+  });
+
+  // Lidar com intents recebidas
+  PushNotification.popInitialNotification((notification) => {
+    console.log('Intent recebida:', notification);
+  });
 };
 
-// Componente principal do app
 const App = () => {
+  useEffect(() => {
+    setupBroadcastReceiver();
+  }, []);
+
+  const Stack = createNativeStackNavigator();
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Menu">
@@ -115,6 +64,12 @@ const App = () => {
           name="PomodoroTimer"
           component={PomodoroTimer}
           options={{ title: 'Timer Pomodoro' }}
+        />
+        {/* Tela de Configurações */}
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ title: 'Configurações' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
