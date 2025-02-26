@@ -1,12 +1,26 @@
 // screens/SettingsScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text as RNText, Switch, StyleSheet, ImageBackground } from 'react-native'; // Importe ImageBackground
+import { View, Text as RNText, Switch, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
 import Slider from '@react-native-community/slider';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/Ionicons'; // Usando Ionicons para consistência
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'; // Para o ícone brightness-4
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { saveData, loadData } from '../services/StorageService';
 import SectionTitle from '../components/SectionTitle';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const SettingsScreen = () => {
+// Defina o tipo das rotas do app
+type RootStackParamList = {
+  Menu: undefined;
+  PomodoroTimer: undefined;
+  Settings: undefined;
+  Tutorial: undefined;
+};
+
+// Defina o tipo da prop `navigation`
+type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
+
+const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationProp }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [silentNotifications, setSilentNotifications] = useState(false);
@@ -16,6 +30,11 @@ const SettingsScreen = () => {
   // Carregar o estado das configurações ao montar o componente
   useEffect(() => {
     const loadSettings = async () => {
+      const savedDarkMode = await loadData('isDarkMode');
+      if (savedDarkMode !== null) {
+        setIsDarkMode(savedDarkMode);
+      }
+
       const savedNotificationsEnabled = await loadData('notificationsEnabled');
       if (savedNotificationsEnabled !== null) {
         setNotificationsEnabled(savedNotificationsEnabled);
@@ -40,9 +59,23 @@ const SettingsScreen = () => {
   }, []);
 
   // Funções para alternar estados
-  const toggleTheme = () => setIsDarkMode((prev) => !prev);
-  const toggleNotifications = () => setNotificationsEnabled((prev) => !prev);
-  const toggleSilentNotifications = () => setSilentNotifications((prev) => !prev);
+  const toggleTheme = async () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    await saveData('isDarkMode', newMode); // Salvar o novo estado no AsyncStorage
+  };
+
+  const toggleNotifications = async () => {
+    const newValue = !notificationsEnabled;
+    setNotificationsEnabled(newValue);
+    await saveData('notificationsEnabled', newValue); // Salvar o novo estado no AsyncStorage
+  };
+
+  const toggleSilentNotifications = async () => {
+    const newValue = !silentNotifications;
+    setSilentNotifications(newValue);
+    await saveData('silentNotifications', newValue); // Salvar o novo estado no AsyncStorage
+  };
 
   // Funções para ajustar tempos
   const handleFocusTimeComplete = (value: number) => {
@@ -57,11 +90,40 @@ const SettingsScreen = () => {
     saveData('breakTime', roundedValue);
   };
 
+  // Função para reiniciar o tutorial
+  const resetTutorial = async () => {
+    try {
+      await AsyncStorage.removeItem('hasSeenTutorial'); // Remove a flag do AsyncStorage
+      navigation.navigate('Tutorial'); // Redireciona para a tela de tutorial
+    } catch (error) {
+      console.error('Erro ao reiniciar o tutorial:', error);
+    }
+  };
+
+  // Função para lidar com os botões da barra inferior
+  const handleOptionPress = (screen: string) => {
+    if (screen === 'Menu') {
+      navigation.navigate('Menu'); // Navega diretamente para o Menu
+    } else if (screen === 'Pomodoro') {
+      navigation.navigate('PomodoroTimer'); // Navega diretamente para o Timer
+    } else {
+      console.log(`A tela "${screen}" estará disponível em breve.`);
+    }
+  };
+
+  // Definição dos botões da barra inferior
+  const menuOptions = [
+    { id: '1', icon: 'play-circle-outline', screen: 'Pomodoro', label: 'Iniciar Timer' },
+    { id: '2', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
+    { id: '3', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
+    { id: '4', icon: 'share-social-outline', screen: 'Share', label: 'Compartilhar' },
+  ];
+
   return (
     <ImageBackground
-    source={require('../assets/test.png')} // Caminho para a imagem
-    style={styles.background}
-    resizeMode="cover" // Garante que a imagem cubra toda a tela
+      source={require('../assets/test.png')} // Caminho para a imagem
+      style={styles.background}
+      resizeMode="cover"
     >
       <View style={[styles.container, isDarkMode && styles.darkOverlay]}>
         {/* Título da Tela */}
@@ -71,13 +133,13 @@ const SettingsScreen = () => {
         <SectionTitle title="Geral" isDarkMode={isDarkMode} />
         <View style={styles.settingItem}>
           <View style={styles.iconLabelContainer}>
-            <Icon name="brightness-4" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
+            <MaterialIcon name="brightness-4" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
             <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Modo Escuro</RNText>
           </View>
           <Switch
             trackColor={{ false: '#767577', true: '#81b0ff' }}
             thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'}
-            onValueChange={toggleTheme}
+            onValueChange={toggleTheme} // Alterna o modo escuro
             value={isDarkMode}
           />
         </View>
@@ -92,7 +154,7 @@ const SettingsScreen = () => {
           <Switch
             trackColor={{ false: '#767577', true: '#81b0ff' }}
             thumbColor={'#f4f3f4'}
-            onValueChange={toggleNotifications}
+            onValueChange={toggleNotifications} // Alterna notificações
             value={notificationsEnabled}
           />
         </View>
@@ -106,7 +168,7 @@ const SettingsScreen = () => {
           <Switch
             trackColor={{ false: '#767577', true: '#81b0ff' }}
             thumbColor={'#f4f3f4'}
-            onValueChange={toggleSilentNotifications}
+            onValueChange={toggleSilentNotifications} // Alterna notificações silenciosas
             value={silentNotifications}
           />
         </View>
@@ -134,7 +196,7 @@ const SettingsScreen = () => {
         </View>
         <View style={styles.sliderContainer}>
           <View style={styles.iconLabelContainer}>
-            <Icon name="pause-circle-filled" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
+            <Icon name="cafe" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
             <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>
               Tempo de Pausa: {breakTime} min
             </RNText>
@@ -151,6 +213,22 @@ const SettingsScreen = () => {
             thumbTintColor={isDarkMode ? '#ffffff' : '#81b0ff'}
           />
         </View>
+
+        {/* Botão "Rever Tutorial" */}
+        <TouchableOpacity style={styles.resetButton} onPress={resetTutorial}>
+          <Icon name="help-circle-outline" size={24} color="#ffffff" style={styles.icon} />
+          <RNText style={styles.resetButtonText}>Rever Tutorial</RNText>
+        </TouchableOpacity>
+      </View>
+
+      {/* Barra Inferior */}
+      <View style={styles.bottomBar}>
+        {menuOptions.map((item) => (
+          <TouchableOpacity key={item.id} style={styles.iconButton} onPress={() => handleOptionPress(item.screen)}>
+            <Icon name={item.icon} size={30} color="#87CEEB" />
+            <RNText style={styles.iconLabel}>{item.label}</RNText>
+          </TouchableOpacity>
+        ))}
       </View>
     </ImageBackground>
   );
@@ -159,7 +237,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   container: {
     flex: 1,
@@ -198,6 +276,39 @@ const styles = StyleSheet.create({
   sliderContainer: {
     marginBottom: 24,
     alignItems: 'center',
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3ba6a2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginLeft: 8,
+  },
+  bottomBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  iconButton: {
+    alignItems: 'center',
+  },
+  iconLabel: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    marginTop: 4,
   },
 });
 

@@ -11,7 +11,7 @@ export default StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    color: colors.text,
+    color: '#ffffff',
   },
   timerText: {
     fontSize: 48,
@@ -25,7 +25,7 @@ export default StyleSheet.create({
   },
   modeText: {
     fontSize: 24,
-    color: '#333',
+    color: '#ffffff',
     marginBottom: 20,
   },
 });

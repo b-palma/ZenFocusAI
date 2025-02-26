@@ -22,15 +22,23 @@ const menuOptions = [
 ];
 
 const MenuScreen = ({ navigation }: { navigation: MenuScreenNavigationProp }) => {
+  // Função para lidar com os botões da barra inferior
   const handleOptionPress = (screen: string) => {
+    const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+
+    // Verifica se o usuário já está na tela selecionada
+    if (currentRoute === screen) {
+      return; // Não faz nada se o usuário já estiver na tela
+    }
+
     if (screen === 'Pomodoro') {
-      navigation.navigate('PomodoroTimer'); // Certifique-se de que o nome da tela está correto
+      navigation.navigate('PomodoroTimer'); // Navega para o Timer
     } else if (screen === 'Settings') {
-        navigation.navigate('Settings'); // Navegue para a tela de Configurações
-      } else {
-        Alert.alert('Em breve!', `A tela "${screen}" estará disponível em breve.`);
-      }
-    };
+      navigation.navigate('Settings'); // Navega para Configurações
+    } else {
+      console.log(`A tela "${screen}" estará disponível em breve.`);
+    }
+  };
 
   return (
     <ImageBackground
