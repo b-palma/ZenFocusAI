@@ -1,62 +1,42 @@
 // screens/MenuScreen.tsx
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Alert, ImageBackground } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; // Importe ícones do Ionicons
+import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useProfileModal } from '../contexts/ProfileModalContext';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
 
-// Defina o tipo das rotas do app
-type RootStackParamList = {
-  Menu: undefined; // A tela de menu não recebe parâmetros
-  PomodoroTimer: undefined; // A tela do timer também não recebe parâmetros
-  Settings: undefined; // Adicione a tela de configurações
-};
-
-// Defina o tipo da prop `navigation`
 type MenuScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Menu'>;
 
 const menuOptions = [
-  { id: '1', icon: 'play-circle-outline', screen: 'Pomodoro', label: 'Iniciar Timer' },
-  { id: '2', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
-  { id: '3', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
-  { id: '4', icon: 'share-social-outline', screen: 'Share', label: 'Compartilhar' },
+  { id: '1', icon: 'person-outline', screen: 'Profile', label: 'Perfil' },
+  { id: '2', icon: 'play-circle-outline', screen: 'PomodoroTimer', label: 'Iniciar Timer' },
+  { id: '3', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
+  { id: '4', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
 ];
 
 const MenuScreen = ({ navigation }: { navigation: MenuScreenNavigationProp }) => {
-  // Função para lidar com os botões da barra inferior
+  const { openModal } = useProfileModal();
+
   const handleOptionPress = (screen: string) => {
-    const currentRoute = navigation.getState().routes[navigation.getState().index].name;
-  
-    // Verifica se o usuário já está na tela selecionada
-    if (currentRoute === screen) {
-      return; // Não faz nada se o usuário já estiver na tela
-    }
-  
-    if (screen === 'Menu') {
-      navigation.navigate('Menu'); // Navega para o Menu
-    } else if (screen === 'Pomodoro') {
-      navigation.navigate('PomodoroTimer'); // Navega para o Timer
-    } else if (screen === 'Settings') {
-      navigation.navigate('Settings'); // Navega para Configurações
-    } else if (screen === 'Share') {
-      navigation.navigate('Share'); // Navega para a tela de Compartilhamento
+    if (screen === 'Profile') {
+      openModal(); // Abre o modal de perfil
     } else {
-      console.log(`A tela "${screen}" estará disponível em breve.`);
+      navigation.navigate(screen); // Navega para a tela correspondente
     }
   };
 
   return (
     <ImageBackground
-      source={require('../assets/background_menu.png')} // Caminho para a imagem
+      source={require('../assets/background_menu.png')}
       style={styles.background}
-      resizeMode="cover" // Garante que a imagem cubra toda a tela
+      resizeMode="cover"
     >
-      {/* Conteúdo principal */}
       <View style={styles.container}>
         <Text style={styles.title}>ZenFocusAI</Text>
         <Text style={styles.subtitle}>Seu assistente de produtividade</Text>
       </View>
 
-      {/* Barra de Navegação Inferior */}
       <View style={styles.bottomBar}>
         {menuOptions.map((item) => (
           <TouchableOpacity
@@ -76,7 +56,7 @@ const MenuScreen = ({ navigation }: { navigation: MenuScreenNavigationProp }) =>
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    justifyContent: 'space-between', // Divide o espaço entre o conteúdo e a barra inferior
+    justifyContent: 'space-between',
   },
   container: {
     flex: 1,
@@ -100,8 +80,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.3)', // Linha divisória
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Fundo semi-transparente
+    borderTopColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   iconButton: {
     alignItems: 'center',

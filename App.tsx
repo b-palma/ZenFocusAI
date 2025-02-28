@@ -9,7 +9,8 @@ import MenuScreen from './screens/MenuScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import PomodoroTimer from './components/PomodoroTimer';
 import TutorialScreen from './screens/TutorialScreen';
-import ShareScreen from './screens/ShareScreen'; // Importe a nova tela
+import { ProfileModalProvider } from './contexts/ProfileModalContext'; // Contexto do modal
+import ProfileModal from './components/ProfileModal'; // Modal global
 
 // Configuração inicial do PushNotification
 PushNotification.configure({
@@ -67,40 +68,37 @@ const App = () => {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName={hasSeenTutorial ? 'Menu' : 'Tutorial'}>
-        {/* Tela de Tutorial */}
-        <Stack.Screen
-          name="Tutorial"
-          component={TutorialScreen}
-          options={{ headerShown: false }} // Oculta o cabeçalho
-        />
-        {/* Tela de Menu */}
-        <Stack.Screen
-          name="Menu"
-          component={MenuScreen}
-          options={{ headerShown: false }} // Oculta o cabeçalho
-        />
-        {/* Tela do Timer Pomodoro */}
-        <Stack.Screen
-          name="PomodoroTimer"
-          component={PomodoroTimer}
-          options={{ headerShown: false }} // Oculta o cabeçalho
-        />
-        {/* Tela de Configurações */}
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ headerShown: false }} // Oculta o cabeçalho
-        />
-        {/* Tela de Compartilhamento */}
-        <Stack.Screen
-          name="Share"
-          component={ShareScreen}
-          options={{ headerShown: false }} // Oculta o cabeçalho
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ProfileModalProvider> {/* Envolva o app com o contexto do modal */}
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName={hasSeenTutorial ? 'Menu' : 'Tutorial'}>
+          {/* Tela de Tutorial */}
+          <Stack.Screen
+            name="Tutorial"
+            component={TutorialScreen}
+            options={{ headerShown: false }} // Oculta o cabeçalho
+          />
+          {/* Tela de Menu */}
+          <Stack.Screen
+            name="Menu"
+            component={MenuScreen}
+            options={{ headerShown: false }} // Oculta o cabeçalho
+          />
+          {/* Tela do Timer Pomodoro */}
+          <Stack.Screen
+            name="PomodoroTimer"
+            component={PomodoroTimer}
+            options={{ headerShown: false }} // Oculta o cabeçalho
+          />
+          {/* Tela de Configurações */}
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{ headerShown: false }} // Oculta o cabeçalho
+          />
+        </Stack.Navigator>
+        <ProfileModal /> {/* Renderiza o modal global */}
+      </NavigationContainer>
+    </ProfileModalProvider>
   );
 };
 

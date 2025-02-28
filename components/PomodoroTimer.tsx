@@ -1,6 +1,6 @@
 // components/PomodoroTimer.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Vibration } from 'react-native'; // Removido Alert
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Vibration } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Usando Ionicons para consistência
 import PushNotification from 'react-native-push-notification';
 import { loadData } from '../services/StorageService';
@@ -10,6 +10,7 @@ import Controls from './Controls';
 import CycleCounter from './CycleCounter';
 import ProgressCircle from './ProgressCircle';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useProfileModal } from '../contexts/ProfileModalContext';
 
 // Defina o tipo das rotas do app
 type RootStackParamList = {
@@ -29,6 +30,9 @@ const PomodoroTimer = ({ navigation }: { navigation: PomodoroTimerNavigationProp
   const [isBreak, setIsBreak] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [silentNotifications, setSilentNotifications] = useState(false);
+
+  // Contexto do modal de perfil
+  const { openModal } = useProfileModal();
 
   // Carregar as configurações ao montar o componente
   useEffect(() => {
@@ -65,7 +69,7 @@ const PomodoroTimer = ({ navigation }: { navigation: PomodoroTimerNavigationProp
           title: isBreak ? 'Pausa Concluída!' : 'Pomodoro Concluído!',
           message: isBreak ? 'Hora de focar novamente!' : 'Hora de descansar!',
           playSound: !silentNotifications,
-          soundName: silentNotifications ? undefined : 'default', // Corrigido aqui
+          soundName: silentNotifications ? undefined : 'default',
         });
       }
       const handleCycleCompletion = async () => {
@@ -112,15 +116,18 @@ const PomodoroTimer = ({ navigation }: { navigation: PomodoroTimerNavigationProp
     };
     updateProgress();
   }, [timeLeft, isBreak]);
+
   const handleOptionPress = (screen: string) => {
     const currentRoute = navigation.getState().routes[navigation.getState().index].name;
-  
+
     // Verifica se o usuário já está na tela selecionada
     if (currentRoute === screen) {
       return; // Não faz nada se o usuário já estiver na tela
     }
-  
-    if (screen === 'Menu') {
+
+    if (screen === 'Profile') {
+      openModal(); // Abre o modal de perfil
+    } else if (screen === 'Menu') {
       navigation.navigate('Menu'); // Navega para o Menu
     } else if (screen === 'Settings') {
       navigation.navigate('Settings'); // Navega para Configurações
@@ -131,10 +138,10 @@ const PomodoroTimer = ({ navigation }: { navigation: PomodoroTimerNavigationProp
 
   // Definição dos botões da barra inferior
   const menuOptions = [
-    { id: '1', icon: 'play-circle-outline', screen: 'Pomodoro', label: 'Iniciar Timer' },
-    { id: '2', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
-    { id: '3', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
-    { id: '4', icon: 'share-social-outline', screen: 'Share', label: 'Compartilhar' },
+    { id: '1', icon: 'person-outline', screen: 'Profile', label: 'Perfil' }, // Botão Perfil
+    { id: '2', icon: 'play-circle-outline', screen: 'PomodoroTimer', label: 'Iniciar Timer' },
+    { id: '3', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
+    { id: '4', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
   ];
 
   return (

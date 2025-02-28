@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { saveData, loadData } from '../services/StorageService';
 import SectionTitle from '../components/SectionTitle';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useProfileModal } from '../contexts/ProfileModalContext';
 
 // Defina o tipo das rotas do app
 type RootStackParamList = {
@@ -26,6 +27,9 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
   const [silentNotifications, setSilentNotifications] = useState(false);
   const [focusTime, setFocusTime] = useState(25);
   const [breakTime, setBreakTime] = useState(5);
+
+  // Contexto do modal de perfil
+  const { openModal } = useProfileModal();
 
   // Carregar o estado das configurações ao montar o componente
   useEffect(() => {
@@ -102,10 +106,14 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
 
   // Função para lidar com os botões da barra inferior
   const handleOptionPress = (screen: string) => {
-    if (screen === 'Menu') {
-      navigation.navigate('Menu'); // Navega diretamente para o Menu
+    if (screen === 'Profile') {
+      openModal(); // Abre o modal de perfil
     } else if (screen === 'Pomodoro') {
       navigation.navigate('PomodoroTimer'); // Navega diretamente para o Timer
+    } else if (screen === 'Menu') {
+      navigation.navigate('Menu'); // Navega diretamente para o Menu
+    } else if (screen === 'Settings') {
+      navigation.navigate('Settings'); // Navega diretamente para Configurações
     } else {
       console.log(`A tela "${screen}" estará disponível em breve.`);
     }
@@ -113,15 +121,15 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
 
   // Definição dos botões da barra inferior
   const menuOptions = [
-    { id: '1', icon: 'play-circle-outline', screen: 'Pomodoro', label: 'Iniciar Timer' },
-    { id: '2', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
-    { id: '3', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
-    { id: '4', icon: 'share-social-outline', screen: 'Share', label: 'Compartilhar' },
+    { id: '1', icon: 'person-outline', screen: 'Profile', label: 'Perfil' }, // Botão Perfil
+    { id: '2', icon: 'play-circle-outline', screen: 'Pomodoro', label: 'Iniciar Timer' },
+    { id: '3', icon: 'home-outline', screen: 'Menu', label: 'Menu Principal' },
+    { id: '4', icon: 'settings-outline', screen: 'Settings', label: 'Configurações' },
   ];
 
   return (
     <ImageBackground
-      source={require('../assets/test.png')} // Caminho para a imagem
+      source={require('../assets/test.png')} // Caminho para a imagem de fundo
       style={styles.background}
       resizeMode="cover"
     >
@@ -130,84 +138,51 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
         <RNText style={[styles.title, isDarkMode && styles.darkText]}>Configurações</RNText>
 
         {/* Seção: Geral */}
-        <SectionTitle title="Geral" isDarkMode={isDarkMode} />
+        <SectionTitle title="Geral" isDarkMode={false} />
         <View style={styles.settingItem}>
           <View style={styles.iconLabelContainer}>
             <MaterialIcon name="brightness-4" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
             <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Modo Escuro</RNText>
           </View>
-          <Switch
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'}
-            onValueChange={toggleTheme} // Alterna o modo escuro
-            value={isDarkMode}
-          />
+          <Switch value={isDarkMode} onValueChange={toggleTheme} />
         </View>
 
         {/* Seção: Notificações */}
-        <SectionTitle title="Notificações" isDarkMode={isDarkMode} />
+        <SectionTitle title="Notificações" isDarkMode={false} />
         <View style={styles.settingItem}>
-          <View style={styles.iconLabelContainer}>
-            <Icon name="notifications" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
-            <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Notificações</RNText>
-          </View>
-          <Switch
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={'#f4f3f4'}
-            onValueChange={toggleNotifications} // Alterna notificações
-            value={notificationsEnabled}
-          />
+          <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Notificações</RNText>
+          <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
         </View>
         <View style={styles.settingItem}>
-          <View style={styles.iconLabelContainer}>
-            <Icon name="volume-off" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
-            <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>
-              Notificações Silenciosas
-            </RNText>
-          </View>
-          <Switch
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={'#f4f3f4'}
-            onValueChange={toggleSilentNotifications} // Alterna notificações silenciosas
-            value={silentNotifications}
-          />
+          <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Notificações Silenciosas</RNText>
+          <Switch value={silentNotifications} onValueChange={toggleSilentNotifications} />
         </View>
 
         {/* Seção: Ajuste do Timer */}
-        <SectionTitle title="Ajuste do Timer" isDarkMode={isDarkMode} />
+        <SectionTitle title="Ajuste do Timer" isDarkMode={false} />
         <View style={styles.sliderContainer}>
-          <View style={styles.iconLabelContainer}>
-            <Icon name="timer" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
-            <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>
-              Tempo de Foco: {focusTime} min
-            </RNText>
-          </View>
+          <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Tempo de Foco: {focusTime} min</RNText>
           <Slider
-            style={{ width: '80%', alignSelf: 'center' }}
+            style={{ width: '100%', height: 40 }}
             minimumValue={5}
             maximumValue={60}
             step={1}
             value={focusTime}
-            onSlidingComplete={(value) => handleFocusTimeComplete(value)}
+            onSlidingComplete={handleFocusTimeComplete}
             minimumTrackTintColor="#81b0ff"
             maximumTrackTintColor="#d3d3d3"
             thumbTintColor={isDarkMode ? '#ffffff' : '#81b0ff'}
           />
         </View>
         <View style={styles.sliderContainer}>
-          <View style={styles.iconLabelContainer}>
-            <Icon name="cafe" size={24} color={isDarkMode ? '#ffffff' : '#000000'} />
-            <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>
-              Tempo de Pausa: {breakTime} min
-            </RNText>
-          </View>
+          <RNText style={[styles.settingLabel, isDarkMode && styles.darkText]}>Tempo de Pausa: {breakTime} min</RNText>
           <Slider
-            style={{ width: '80%', alignSelf: 'center' }}
+            style={{ width: '100%', height: 40 }}
             minimumValue={1}
             maximumValue={30}
             step={1}
             value={breakTime}
-            onSlidingComplete={(value) => handleBreakTimeComplete(value)}
+            onSlidingComplete={handleBreakTimeComplete}
             minimumTrackTintColor="#81b0ff"
             maximumTrackTintColor="#d3d3d3"
             thumbTintColor={isDarkMode ? '#ffffff' : '#81b0ff'}
@@ -216,7 +191,7 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
 
         {/* Botão "Rever Tutorial" */}
         <TouchableOpacity style={styles.resetButton} onPress={resetTutorial}>
-          <Icon name="help-circle-outline" size={24} color="#ffffff" style={styles.icon} />
+          <MaterialIcon name="help-outline" size={20} color="#ffffff" />
           <RNText style={styles.resetButtonText}>Rever Tutorial</RNText>
         </TouchableOpacity>
       </View>
