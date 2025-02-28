@@ -9,6 +9,7 @@ import MenuScreen from './screens/MenuScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import PomodoroTimer from './components/PomodoroTimer';
 import TutorialScreen from './screens/TutorialScreen';
+import ShareScreen from './screens/ShareScreen'; // Importe a nova tela
 
 // Configuração inicial do PushNotification
 PushNotification.configure({
@@ -56,7 +57,6 @@ const App = () => {
         console.error('Erro ao verificar status do tutorial:', error);
       }
     };
-
     checkTutorialStatus();
     setupBroadcastReceiver();
   }, []);
@@ -91,6 +91,12 @@ const App = () => {
         <Stack.Screen
           name="Settings"
           component={SettingsScreen}
+          options={{ headerShown: false }} // Oculta o cabeçalho
+        />
+        {/* Tela de Compartilhamento */}
+        <Stack.Screen
+          name="Share"
+          component={ShareScreen}
           options={{ headerShown: false }} // Oculta o cabeçalho
         />
       </Stack.Navigator>
