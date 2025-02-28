@@ -1,10 +1,8 @@
-// types.ts
-import { NavigationProp } from '@react-navigation/native';
-
-// Define os parâmetros das telas do app
+// types.d.ts
 export type RootStackParamList = {
-  Tutorial: undefined; // Tela de tutorial (sem parâmetros)
-  Menu: undefined; // Tela de menu (sem parâmetros)
+  Menu: undefined; // Tela de Menu (sem parâmetros)
   PomodoroTimer: undefined; // Tela do Timer Pomodoro (sem parâmetros)
   Settings: undefined; // Tela de Configurações (sem parâmetros)
+  Tutorial: undefined; // Tela de Tutorial (sem parâmetros)
+  Share: undefined; // Nova tela de Compartilhamento (sem parâmetros)
 };

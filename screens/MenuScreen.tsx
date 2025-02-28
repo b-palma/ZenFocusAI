@@ -25,16 +25,20 @@ const MenuScreen = ({ navigation }: { navigation: MenuScreenNavigationProp }) =>
   // Função para lidar com os botões da barra inferior
   const handleOptionPress = (screen: string) => {
     const currentRoute = navigation.getState().routes[navigation.getState().index].name;
-
+  
     // Verifica se o usuário já está na tela selecionada
     if (currentRoute === screen) {
       return; // Não faz nada se o usuário já estiver na tela
     }
-
-    if (screen === 'Pomodoro') {
+  
+    if (screen === 'Menu') {
+      navigation.navigate('Menu'); // Navega para o Menu
+    } else if (screen === 'Pomodoro') {
       navigation.navigate('PomodoroTimer'); // Navega para o Timer
     } else if (screen === 'Settings') {
       navigation.navigate('Settings'); // Navega para Configurações
+    } else if (screen === 'Share') {
+      navigation.navigate('Share'); // Navega para a tela de Compartilhamento
     } else {
       console.log(`A tela "${screen}" estará disponível em breve.`);
     }
